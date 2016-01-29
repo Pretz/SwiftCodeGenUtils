@@ -8,11 +8,22 @@
 
 import UIKit
 
+
+enum GeneratorType: Int {
+    case SwiftGen
+    case Natalie
+    case R
+    case CodeGenUtils
+    case None
+}
+
 class MasterViewController: UITableViewController {
 
     var detailViewController: DetailViewController? = nil
     var objects = [AnyObject]()
+    var generatorType = GeneratorType.None
 
+    @IBOutlet weak var segmentedControl: UISegmentedControl!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,28 +43,53 @@ class MasterViewController: UITableViewController {
         super.viewWillAppear(animated)
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
     func insertNewObject(sender: AnyObject) {
         objects.insert(NSDate(), atIndex: 0)
         let indexPath = NSIndexPath(forRow: 0, inSection: 0)
         self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
     }
 
+    @IBAction func segmentedControlChanged(sender: AnyObject?) {
+        if let type = GeneratorType(rawValue: segmentedControl.selectedSegmentIndex) {
+            generatorType = type
+        }
+    }
+
     // MARK: - Segues
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "showDetail" {
-            if let indexPath = self.tableView.indexPathForSelectedRow {
-                let object = objects[indexPath.row] as! NSDate
-                let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
-                controller.detailItem = object
-                controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
-                controller.navigationItem.leftItemsSupplementBackButton = true
+        switch generatorType {
+        case .None:
+            if segue.identifier == "showDetail" {
+                prepareDestinationForDetailSegue(segue.destinationViewController as! UINavigationController)
             }
+        case .SwiftGen:
+            if StoryboardSegue.Main(rawValue: segue.identifier!) == .ShowDetail {
+                prepareDestinationForDetailSegue(segue.destinationViewController as! UINavigationController)
+            }
+        case .Natalie:
+            if segue == Segue.showDetail {
+                prepareDestinationForDetailSegue(segue.destinationViewController as! UINavigationController)
+            }
+        case .R:
+            if let info = R.segue.masterViewController.showDetail(segue: segue) {
+                prepareDestinationForDetailSegue(info.destinationViewController)
+            }
+        case .CodeGenUtils:
+            if segue.identifier == MainStoryboardShowDetailIdentifier {
+                prepareDestinationForDetailSegue(segue.destinationViewController as! UINavigationController)
+            }
+        }
+    }
+
+    func prepareDestinationForDetailSegue(destination: UINavigationController) {
+        if let indexPath = self.tableView.indexPathForSelectedRow {
+            let object = objects[indexPath.row] as! NSDate
+            let controller = destination.topViewController as! DetailViewController
+            controller.detailItem = object
+            controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
+            controller.navigationItem.leftItemsSupplementBackButton = true
+            controller.generatorType = generatorType
         }
     }
 

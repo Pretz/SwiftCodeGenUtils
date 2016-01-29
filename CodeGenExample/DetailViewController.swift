@@ -12,12 +12,18 @@ class DetailViewController: UIViewController {
 
     @IBOutlet weak var detailDescriptionLabel: UILabel!
 
+    var generatorType: GeneratorType = .None
 
     var detailItem: AnyObject? {
         didSet {
             // Update the view.
             self.configureView()
         }
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.configureView()
     }
 
     func configureView() {
@@ -29,17 +35,62 @@ class DetailViewController: UIViewController {
         }
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-        self.configureView()
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        switch generatorType {
+        case .None:
+            switch segue.identifier {
+                case "ImageView"?:
+                    if let dest = segue.destinationViewController as? ImageViewController {
+                        dest.imageToShow = UIImage(named: "lolwut")
+                }
+            default:
+                break
+            }
+        case .SwiftGen:
+            switch StoryboardSegue.Main(rawValue: segue.identifier!) {
+            case .ImageView?:
+                if let dest = segue.destinationViewController as? ImageViewController {
+                    dest.imageToShow = UIImage(named: "lolwut")
+                }
+            default:
+                break
+            }
+        case .Natalie:
+            guard let segueType: Segue = segue.selection() else { return }
+            switch segueType {
+            case .ImageView:
+                if let dest = segue.destinationViewController as? ImageViewController {
+                    dest.imageToShow = UIImage(named: "lolwut")
+                }
+            }
+        case .R:
+            if let segueInfo = R.segue.detailViewController.imageView(segue: segue) {
+                segueInfo.destinationViewController.imageToShow = R.image.lolwut()
+            }
+        case .CodeGenUtils:
+            switch segue.identifier {
+            case MainStoryboardImageViewIdentifier?:
+                if let dest = segue.destinationViewController as? ImageViewController {
+                    dest.imageToShow = AssetsCatalog.lolwutImage()
+                }
+            default:
+                break
+            }
+        }
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    @IBAction func normalButtonPressed(sender: AnyObject) {
+        switch generatorType {
+        case .None:
+            performSegueWithIdentifier("ImageView", sender: self)
+        case .SwiftGen:
+            performSegue(StoryboardSegue.Main.ImageView)
+        case .Natalie:
+            performSegue(Segue.ImageView)
+        case .R:
+            performSegueWithIdentifier(R.segue.detailViewController.imageView, sender: self)
+        case .CodeGenUtils:
+            performSegueWithIdentifier(MainStoryboardImageViewIdentifier, sender: self)
+        }
     }
-
-
 }
-
