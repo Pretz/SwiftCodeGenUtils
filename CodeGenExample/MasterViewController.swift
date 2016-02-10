@@ -13,6 +13,7 @@ enum GeneratorType: Int {
     case SwiftGen
     case Natalie
     case R
+    case SegueManager_R
     case CodeGenUtils
     case None
 }
@@ -71,6 +72,9 @@ class MasterViewController: UITableViewController {
             if segue == Segue.showDetail {
                 prepareDestinationForDetailSegue(segue.destinationViewController as! UINavigationController)
             }
+        case .SegueManager_R:
+            // A segue triggered from Storyboard is not a case that is supported by SegueManager
+            fallthrough
         case .R:
             if let info = R.segue.masterViewController.showDetail(segue: segue) {
                 prepareDestinationForDetailSegue(info.destinationViewController)

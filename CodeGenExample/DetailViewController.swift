@@ -7,10 +7,13 @@
 //
 
 import UIKit
+import SegueManager
 
-class DetailViewController: UIViewController {
+class DetailViewController: UIViewController, SeguePerformer {
 
     @IBOutlet weak var detailDescriptionLabel: UILabel!
+
+    lazy var segueManager: SegueManager = { SegueManager(viewController: self) }()
 
     var generatorType: GeneratorType = .None
 
@@ -67,6 +70,8 @@ class DetailViewController: UIViewController {
             if let segueInfo = R.segue.detailViewController.imageView(segue: segue) {
                 segueInfo.destinationViewController.imageToShow = R.image.lolwut()
             }
+        case .SegueManager_R:
+            segueManager.prepareForSegue(segue)
         case .CodeGenUtils:
             switch segue.identifier {
             case MainStoryboardImageViewIdentifier?:
@@ -89,6 +94,10 @@ class DetailViewController: UIViewController {
             performSegue(Segue.ImageView)
         case .R:
             performSegueWithIdentifier(R.segue.detailViewController.imageView, sender: self)
+        case .SegueManager_R:
+            performSegue(R.segue.detailViewController.imageView) { segue in
+                segue.destinationViewController.imageToShow = R.image.lolwut()
+            }
         case .CodeGenUtils:
             performSegueWithIdentifier(MainStoryboardImageViewIdentifier, sender: self)
         }
